@@ -1,0 +1,33 @@
+name: Reviewdog
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  reviewdog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@d8edfce3dd5e1ec6978745e801f9c50b5ef80252 # v1.4.0
+        with:
+          reviewdog_version: latest # Optional. [latest,nightly,v.X.Y.Z]
+
+      - name: Run dotnet format check
+        run: |
+          dotnet format --verify-no-changes --verbosity diagnostic . 2>&1 | reviewdog -f=dotnet-format -reporter=github-pr-review -fail-on-error=false || true
+
+      - name: Run dotnet build
+        run: |
+          dotnet build --no-restore 2>&1 | reviewdog -f=msbuild -reporter=github-pr-review -fail-on-error=false || true
