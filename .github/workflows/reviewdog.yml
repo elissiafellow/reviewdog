@@ -2,10 +2,10 @@ name: Reviewdog
 
 on:
   pull_request:
-  push:
-    branches:
-      - main
-      - master
+  # push:
+  #   branches:
+  #     - main
+  #     - master
 
 jobs:
   reviewdog:
@@ -26,8 +26,8 @@ jobs:
 
       - name: Run dotnet format check
         run: |
-          dotnet format --verify-no-changes --verbosity diagnostic . 2>&1 | reviewdog -f=dotnet-format -reporter=github-pr-review -fail-on-error=false || true
+          dotnet format --verify-no-changes --verbosity diagnostic . 2>&1 | reviewdog -efm="%f(%l,%c): %m" -reporter=github-pr-review -name="dotnet-format" -fail-on-error=false || true
 
-      - name: Run dotnet build
+      - name: Run dotnet build (warnings)
         run: |
-          dotnet build --no-restore 2>&1 | reviewdog -f=msbuild -reporter=github-pr-review -fail-on-error=false || true
+          dotnet build --no-restore 2>&1 | reviewdog -f=msbuild -reporter=github-pr-review -level=warning -fail-on-error=false || true
